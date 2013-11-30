@@ -50,7 +50,7 @@
         NSLog(@"getting steps from %@ to %@", start, finish);
         [stepCounter queryStepCountStartingFrom:start to:finish toQueue:queue withHandler:^(NSInteger numberOfSteps, NSError *error) {
             if (numberOfSteps > 0) {
-                NSLog(@"got %ld steps", numberOfSteps);
+                NSLog(@"got %ld steps", (long)numberOfSteps);
                 [data addObject:@[start, @(numberOfSteps)]];
             }
         }];
@@ -70,6 +70,11 @@
             return;
         }
     }
+    
+    // The data upload API needs a secret token in the post, unique to the data source name.
+    // I use identifierForVendor because it won't change, and is secret, so I don't have to
+    // commit anything secret to a public github.
+    NSString *secret = [[UIDevice currentDevice] identifierForVendor].UUIDString;
 
     NSDate *date = dataPoints[0][0];
     NSNumber *count = dataPoints[0][1];
@@ -82,7 +87,7 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:endpoint];
     request.HTTPMethod = @"POST";
     NSUInteger when = [date timeIntervalSince1970];
-    NSString *body = [NSString stringWithFormat:@"slug=%@&value=%@&when=%ld", @"steps", count, when];
+    NSString *body = [NSString stringWithFormat:@"slug=%@&value=%@&when=%ld&secret=%@", @"steps", count, (long)when, secret];
     request.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
     
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request
