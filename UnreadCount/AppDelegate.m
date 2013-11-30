@@ -55,10 +55,8 @@
             }
         }];
     }
-    [queue addOperationWithBlock:^{
-        // on the queue after all the step count queries
-        [self uploadDataPointFrom:data];
-    }];
+    // total hack to do upload after getting step counts.
+    [self performSelector:@selector(uploadDataPointFrom:) withObject:data afterDelay:1];
 }
 
 - (void)uploadDataPointFrom:(NSMutableArray *)dataPoints;
